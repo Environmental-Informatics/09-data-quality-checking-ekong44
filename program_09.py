@@ -10,6 +10,8 @@ Program Description:
 References: 
     https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html
     https://stackoverflow.com/questions/29530232/how-to-check-if-any-value-is-nan-in-a-pandas-dataframe
+    https://stackoverflow.com/questions/46168450/replace-a-specific-range-of-values-in-a-pandas-dataframe
+    https://stackoverflow.com/questions/40159763/how-to-replace-a-range-of-values-with-nan-in-pandas-data-frame
 """
 
 import pandas as pd
@@ -32,7 +34,8 @@ def ReadData( fileName ):
     DataDF = DataDF.set_index('Date')
     
     # define and initialize the missing data dictionary
-    ReplacedValuesDF = pd.DataFrame(0, index=["1. No Data"], columns=colNames[1:])
+    # Included other indexes
+    ReplacedValuesDF = pd.DataFrame(0, index=["1. No Data","2. Gross Error","3. Swapped","4. Range Fail"], columns=colNames[1:])
      
     return( DataDF, ReplacedValuesDF )
  
@@ -60,8 +63,15 @@ def Check02_GrossErrors( DataDF, ReplacedValuesDF ):
     passed the check."""
  
     # add your code here
+    # replace values in column of DF with NaN if outside of range
+    DataDF['Precip'] = DataDF['Precip'].mask((DataDF['Precip'] > 25) | (DataDF['Precip'] < 0), np.NaN) 
+    DataDF['Max Temp'] = DataDF['Max Temp'].mask((DataDF['Max Temp'] > 35) | (DataDF['Max Temp'] < -25), np.NaN)
+    DataDF['Min Temp'] = DataDF['Min Temp'].mask((DataDF['Min Temp'] > 35) | (DataDF['Min Temp'] < -25), np.NaN)
+    DataDF['Wind Speed'] = DataDF['Wind Speed'].mask((DataDF['Wind Speed'] > 10) | (DataDF['Wind Speed'] < 0), np.NaN)
     
-
+    # The count from the gross error check is equal to the number of NaNs in the DF minus the number of previously counted NaNs
+    ReplacedValuesDF.loc['2. Gross Error',:] = DataDF.isna().sum() - ReplacedValuesDF.sum()
+    
     return( DataDF, ReplacedValuesDF )
     
 def Check03_TmaxTminSwapped( DataDF, ReplacedValuesDF ):
