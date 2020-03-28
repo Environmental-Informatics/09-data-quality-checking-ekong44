@@ -12,6 +12,7 @@ References:
     https://stackoverflow.com/questions/29530232/how-to-check-if-any-value-is-nan-in-a-pandas-dataframe
     https://stackoverflow.com/questions/46168450/replace-a-specific-range-of-values-in-a-pandas-dataframe
     https://stackoverflow.com/questions/40159763/how-to-replace-a-range-of-values-with-nan-in-pandas-data-frame
+    https://stackoverflow.com/questions/38901563/pandas-swap-columns-based-on-condition/38903431
 """
 
 import pandas as pd
@@ -81,8 +82,13 @@ def Check03_TmaxTminSwapped( DataDF, ReplacedValuesDF ):
     of how many times the fix has been applied."""
     
     # add your code here
+    instances = len(DataDF.loc[DataDF['Min Temp'] > DataDF['Max Temp']]) # see where max temp is less than min temp, by row. Record how many times this happens
     
-
+    # swap values inside the min and max temp column if Min > Max
+    DataDF["Min Temp"], DataDF["Max Temp"] = np.where(DataDF['Min Temp'] > DataDF['Max Temp'], [DataDF["Max Temp"], DataDF["Min Temp"]], [DataDF["Min Temp"], DataDF["Max Temp"] ])
+    
+    ReplacedValuesDF.loc['3. Swapped',:] = [0,instances,instances,0] # new DF index accounts for the temperature error
+    
     return( DataDF, ReplacedValuesDF )
     
 def Check04_TmaxTminRange( DataDF, ReplacedValuesDF ):
@@ -93,10 +99,9 @@ def Check04_TmaxTminRange( DataDF, ReplacedValuesDF ):
     removed through the process."""
     
     # add your code here
-    
+
 
     return( DataDF, ReplacedValuesDF )
-    
 
 # the following condition checks whether we are running as a script, in which 
 # case run the test code, otherwise functions are being imported so do not.
