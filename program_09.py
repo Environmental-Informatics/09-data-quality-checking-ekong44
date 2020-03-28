@@ -5,7 +5,11 @@ Created on Saturday March 21, 2020 at 8:39 PM
 
 Program Description: 
     This script is a modified template. It performs an automated data quality 
-    checking by using functions. 
+    checking by using functions. First, an error check for invalid, no data entries. 
+    Then values outside a threshold for the data is replaced with NaN. 
+    Some entries for min and max temp are in the wrong column, so those are swapped. 
+    Finally, the difference in high and low temp for the day is calculated to 
+    determine if it is outside and exceptable difference. 
 
 References: 
     https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html
@@ -84,10 +88,10 @@ def Check03_TmaxTminSwapped( DataDF, ReplacedValuesDF ):
     # add your code here
     instances = len(DataDF.loc[DataDF['Min Temp'] > DataDF['Max Temp']]) # see where max temp is less than min temp, by row. Record how many times this happens
     
-    # swap values inside the min and max temp column if Min > Max
+    # swap values inside the min and max temp column if Min > Max at that row
     DataDF["Min Temp"], DataDF["Max Temp"] = np.where(DataDF['Min Temp'] > DataDF['Max Temp'], [DataDF["Max Temp"], DataDF["Min Temp"]], [DataDF["Min Temp"], DataDF["Max Temp"] ])
     
-    ReplacedValuesDF.loc['3. Swapped',:] = [0,instances,instances,0] # new DF index accounts for the temperature error
+    ReplacedValuesDF.loc['3. Swapped',:] = [0, instances, instances, 0] # new DF index accounts for the temperature error
     
     return( DataDF, ReplacedValuesDF )
     
@@ -99,8 +103,13 @@ def Check04_TmaxTminRange( DataDF, ReplacedValuesDF ):
     removed through the process."""
     
     # add your code here
+    # see where max temp minus min temp is greater than 25, by row. Record how many times this happens
+    instances2 = len(DataDF.loc[ (DataDF['Max Temp'] - DataDF['Min Temp']) > 25])
+    
+    # replace values inside the temp columns with NaN if the difference between between max and min for the day is > 25
+    DataDF.loc[(DataDF['Max Temp'] - DataDF['Min Temp'] > 25), ['Max Temp','Min Temp']] = np.NaN
 
-
+    ReplacedValuesDF.loc['4. Range Fail',:] = [0, instances2, instances2, 0] # new DF index accounts for the temperature range error
     return( DataDF, ReplacedValuesDF )
 
 # the following condition checks whether we are running as a script, in which 
