@@ -9,7 +9,8 @@ Program Description:
     Then values outside a threshold for the data is replaced with NaN. 
     Some entries for min and max temp are in the wrong column, so those are swapped. 
     Finally, the difference in high and low temp for the day is calculated to 
-    determine if it is outside and exceptable difference. 
+    determine if it is outside the acceptable difference. 
+    Raw and processed data is plotted to show the results. 
 
 References: 
     https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html
@@ -20,7 +21,9 @@ References:
 """
 
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.pyplot import figure
 
 def ReadData( fileName ):
     """This function takes a filename as input, and returns a dataframe with
@@ -139,3 +142,62 @@ if __name__ == '__main__':
     
     print("\nAll processing finished.....\n", DataDF.describe())
     print("\nFinal changed values counts.....\n", ReplacedValuesDF)
+    
+########################## Plotting and saving data to new file #############################################
+
+# getting the raw data 
+colNames = ['Date','Precip','Max Temp', 'Min Temp','Wind Speed']
+
+RawDF = pd.read_csv("DataQualityChecking.txt",header=None, names=colNames,  
+                         delimiter=r"\s+",parse_dates=[0])
+RawDF = RawDF.set_index('Date')
+
+# before and after plot of precip 
+figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+plt.plot(DataDF.index, RawDF['Precip'],'b*', label = 'Before correction')
+plt.plot(DataDF.index, DataDF['Precip'],'r*', label = 'After correction', markersize = 1.5)
+plt.xlabel('Date')
+plt.ylabel('Precipitation (mm)')
+plt.title('Precipitation Before and After Correction')
+plt.legend()
+plt.savefig('Precipitation.png')
+plt.close()
+    
+# before and after plot of max temp
+figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+plt.plot(DataDF.index, RawDF['Max Temp'],'b*', label = 'Before correction')
+plt.plot(DataDF.index, DataDF['Max Temp'],'r*', label = 'After correction', markersize = 1.5)
+plt.xlabel('Date')
+plt.ylabel('Temperature (C)')
+plt.title('Max Air Temperature Before and After Correction')
+plt.legend()
+plt.savefig('Max Temp.png')
+plt.close()
+    
+# before and after plot of min temp
+figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+plt.plot(DataDF.index, RawDF['Min Temp'],'b*', label = 'Before correction')
+plt.plot(DataDF.index, DataDF['Min Temp'],'r*', label = 'After correction', markersize = 1.5)
+plt.xlabel('Date')
+plt.ylabel('Temperature (C)')
+plt.title('Minimum Air Temperature Before and After Correction')
+plt.legend()
+plt.savefig('Min Temp.png')
+plt.close()
+    
+# before and after plot of wind speed
+figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+plt.plot(DataDF.index, RawDF['Wind Speed'],'b*', label = 'Before correction')
+plt.plot(DataDF.index, DataDF['Wind Speed'],'r*', label = 'After correction', markersize = 1.5)
+plt.xlabel('Date')
+plt.ylabel('Wind Speed (m/s)')
+plt.title('Wind Speed Before and After Correction')
+plt.legend()
+plt.savefig('Wind Speed.png')
+plt.close()
+
+# output info on data that passed checks to a new file, with the same format as the original 
+DataDF.to_csv('Passed_Checks.txt', header=None, sep=" ")
+    
+# output info on data that failed checks to a Tab delimited file 
+ReplacedValuesDF.to_csv('Failed_Checks.txt', sep="\t")
